@@ -82,26 +82,26 @@ partial class GPXDocument
 
         /// <summary>Сохранить в XML</summary>
         /// <param name="points">Элемент XML-структуры, содержащий информацию о точках</param>
-        /// <param name="name">Имя рзадела</param>
-        public void SaveTo(XElement points, string name)
+        /// <param name="PartName">Имя рзадела</param>
+        public void SaveTo(XElement points, string PartName)
         {
-            var point = new XElement(__GPX_ns + name);
+            var point = new XElement(__GPX_ns + PartName);
             if (!double.IsNaN(Lattitude)) point.Add(new XAttribute(Lattitude_xml_name, Lattitude));
             if (!double.IsNaN(Longitude)) point.Add(new XAttribute(Longitude_xml_name, Longitude));
-            if (!double.IsNaN(Height)) point.Add(new XAttribute(Height_xml_name, Height));
-            if (!double.IsNaN(Cource)) point.Add(new XAttribute(Cource_xml_name, Cource));
-            if (Time != null) point.Add(new XElement(__GPX_ns + Time_xml_name, Time));
+            if (!double.IsNaN(Height))    point.Add(new XAttribute(Height_xml_name, Height));
+            if (!double.IsNaN(Cource))    point.Add(new XAttribute(Cource_xml_name, Cource));
+            if (Time is { } time)         point.Add(new XElement(__GPX_ns + Time_xml_name, time));
 
-            if (!double.IsNaN(Elevation)) point.Add(new XElement(__GPX_ns + Elevation_xml_name, Elevation));
+            if (!double.IsNaN(Elevation))         point.Add(new XElement(__GPX_ns + Elevation_xml_name, Elevation));
             if (!double.IsNaN(MagneticVariation)) point.Add(new XElement(__GPX_ns + MagneticVariation_xml_name, MagneticVariation));
-            if (!double.IsNaN(GeoidHeight)) point.Add(new XElement(__GPX_ns + GeoidHeight_xml_name, GeoidHeight));
+            if (!double.IsNaN(GeoidHeight))       point.Add(new XElement(__GPX_ns + GeoidHeight_xml_name, GeoidHeight));
 
-            if (!string.IsNullOrWhiteSpace(Name)) point.Add(new XElement(__GPX_ns + Name_xml_name, Name));
-            if (!string.IsNullOrWhiteSpace(Comment)) point.Add(new XElement(__GPX_ns + Comment_xml_name, Comment));
-            if (!string.IsNullOrWhiteSpace(Description)) point.Add(new XElement(__GPX_ns + Description_xml_name, Description));
-            if (!string.IsNullOrWhiteSpace(Source)) point.Add(new XElement(__GPX_ns + Source_xml_name, Source));
-            if (!string.IsNullOrWhiteSpace(SymbolName)) point.Add(new XElement(__GPX_ns + SymbolName_xml_name, SymbolName));
-            if (!string.IsNullOrWhiteSpace(Type)) point.Add(new XElement(__GPX_ns + Type_xml_name, Type));
+            if (Name is { Length       : >0 } name)        point.Add(new XElement(__GPX_ns + Name_xml_name, name));
+            if (Comment is { Length    : >0 } comment)     point.Add(new XElement(__GPX_ns + Comment_xml_name, comment));
+            if (Description is { Length: >0 } description) point.Add(new XElement(__GPX_ns + Description_xml_name, description));
+            if (Source is { Length     : >0 } source)      point.Add(new XElement(__GPX_ns + Source_xml_name, source));
+            if (SymbolName is { Length : >0 } symbol_name) point.Add(new XElement(__GPX_ns + SymbolName_xml_name, symbol_name));
+            if (Type is { Length       : >0 } type)        point.Add(new XElement(__GPX_ns + Type_xml_name, type));
             if (SatelliteCount >= 0) point.Add(new XElement(__GPX_ns + SatelliteCount_xml_name, SatelliteCount));
 
             if (Extensions.HasAttributes || Extensions.HasElements) point.Add(Extensions);
@@ -110,7 +110,7 @@ partial class GPXDocument
 
         /// <summary>Загрузить из XML</summary>
         /// <param name="point">Элемент XML-структуры, содержащий информацию точке</param>
-        public void LoadFrom(XElement point)
+        public Point LoadFrom(XElement point)
         {
             Lattitude = (double?)point.Attribute(Lattitude_xml_name) ?? double.NaN;
             Longitude = (double?)point.Attribute(Longitude_xml_name) ?? double.NaN;
@@ -129,8 +129,10 @@ partial class GPXDocument
             Type              = (string)point.Element(__GPX_ns + Type_xml_name);
             SatelliteCount    = (int?)point.Element(__GPX_ns + Type_xml_name) ?? -1;
 
-            var extensions                     = point.Element(__GPX_ns + "extensions");
-            if (extensions != null) Extensions = extensions;
+            if (point.Element(__GPX_ns + "extensions") is { } extensions) 
+                Extensions = extensions;
+
+            return this;
         }
 
         /// <inheritdoc />

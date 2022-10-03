@@ -60,8 +60,8 @@ namespace MathCore.GPX
             /// <param name="segment">Добавляемый сегмент трека</param>
             public void Add(TrackSegment segment)
             {
-                if (_Segments.Contains(segment)) return;
-                _Segments.Add(segment);
+                if (!_Segments.Contains(segment)) 
+                    _Segments.Add(segment);
             }
 
             /// <summary>Удалить сегмент трека</summary>
@@ -75,15 +75,16 @@ namespace MathCore.GPX
             /// <param name="gpx">XML-структура файла GPX</param>
             public void SaveTo(XElement gpx)
             {
-                if (gpx.Name.LocalName != nameof(gpx)) throw new ArgumentException($@"Родительский узел не является узлом {nameof(gpx)}");
-                XElement trk;
-                trk = new XElement(__GPX_ns + nameof(trk));
-                if (!string.IsNullOrWhiteSpace(Name)) trk.Add(new XElement(__GPX_ns + Name_xml_name, Name));
-                if (!string.IsNullOrWhiteSpace(Comment)) trk.Add(new XElement(__GPX_ns + Comment_xml_name, Comment));
-                if (!string.IsNullOrWhiteSpace(Description)) trk.Add(new XElement(__GPX_ns + Description_xml_name, Description));
-                if (!string.IsNullOrWhiteSpace(Source)) trk.Add(new XElement(__GPX_ns + Source_xml_name, Source));
+                if (gpx.Name.LocalName != nameof(gpx)) 
+                    throw new ArgumentException($@"Родительский узел не является узлом {nameof(gpx)}");
+
+                var trk = new XElement(__GPX_ns + "trk");
+                if (Name is { Length       : >0 } name) trk.Add(new XElement(__GPX_ns + Name_xml_name, name));
+                if (Comment is { Length    : >0 } comment) trk.Add(new XElement(__GPX_ns + Comment_xml_name, comment));
+                if (Description is { Length: >0 } description) trk.Add(new XElement(__GPX_ns + Description_xml_name, description));
+                if (Source is { Length     : >0 } source) trk.Add(new XElement(__GPX_ns + Source_xml_name, source));
                 if (Number >= 0) trk.Add(new XElement(__GPX_ns + Number_xml_name, Number));
-                if (!string.IsNullOrWhiteSpace(Type)) trk.Add(new XElement(__GPX_ns + Type_xml_name, Type));
+                if (Type is { Length: >0 } type) trk.Add(new XElement(__GPX_ns + Type_xml_name, type));
 
                 if (Extensions.HasAttributes || Extensions.HasElements) trk.Add(Extensions);
 
@@ -94,25 +95,27 @@ namespace MathCore.GPX
 
             /// <summary>Загрузить трек из XML</summary>
             /// <param name="trk">XML-структура блока данных трека</param>
-            public void LoadFrom(XElement trk)
+            public Track LoadFrom(XElement trk)
             {
-                if (trk.Name.LocalName != nameof(trk)) throw new ArgumentException($@"Родительский узел не является узлом {nameof(trk)}");
-                Name = (string)trk.Element(__GPX_ns + Name_xml_name);
-                Comment = (string)trk.Element(__GPX_ns + Comment_xml_name);
+                if (trk.Name.LocalName != nameof(trk)) 
+                    throw new ArgumentException($@"Родительский узел не является узлом {nameof(trk)}");
+
+                Name        = (string)trk.Element(__GPX_ns + Name_xml_name);
+                Comment     = (string)trk.Element(__GPX_ns + Comment_xml_name);
                 Description = (string)trk.Element(__GPX_ns + Description_xml_name);
-                Source = (string)trk.Element(__GPX_ns + Source_xml_name);
-                Number = (int?)trk.Element(__GPX_ns + Number_xml_name) ?? -1;
-                Type = (string)trk.Element(__GPX_ns + Type_xml_name);
+                Source      = (string)trk.Element(__GPX_ns + Source_xml_name);
+                Number      = (int?)trk.Element(__GPX_ns   + Number_xml_name) ?? -1;
+                Type        = (string)trk.Element(__GPX_ns + Type_xml_name);
 
-                var extensions = trk.Element(__GPX_ns + "extensions");
-                if (extensions != null) Extensions = extensions;
+                if (trk.Element(__GPX_ns + "extensions") is { } extensions) 
+                    Extensions = extensions;
 
-                foreach (var trkseg in trk.Elements(__GPX_ns + "trkseg").Where(trkseg => trkseg.HasElements))
-                {
-                    var segment = new TrackSegment();
-                    segment.LoadFrom(trkseg);
-                    _Segments.Add(segment);
-                }
+                _Segments.AddRange(trk
+                   .Elements(__GPX_ns + "trkseg")
+                   .Where(trkseg => trkseg.HasElements)
+                   .Select(trkseg => new TrackSegment().LoadFrom(trkseg)));
+
+                return this;
             }
 
             IEnumerator<TrackSegment> IEnumerable<TrackSegment>.GetEnumerator() => _Segments.GetEnumerator();

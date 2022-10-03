@@ -58,32 +58,36 @@ public partial class GPXDocument : IEnumerable<GPXDocument.Track>
 
     public void Add(Track track)
     {
-        if (_Tracks.Contains(track)) return;
-        _Tracks.Add(track);
+        if (!_Tracks.Contains(track)) 
+            _Tracks.Add(track);
     }
 
     public bool Remove(Track track) => _Tracks.Remove(track);
 
     public void Save(string FileName)
     {
-        var      xsi_ns = XNamespace.Get("http://www.w3.org/2001/XMLSchema-instance");
-        XElement gpx;
-        gpx = new XElement(__GPX_ns + nameof(gpx),
+        var xsi_ns = XNamespace.Get("http://www.w3.org/2001/XMLSchema-instance");
+        var gpx = new XElement(__GPX_ns + "gpx",
             new XAttribute(xsi_ns + "schemaLocation", "http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd"),
             new XAttribute(XNamespace.Xmlns + "xsi", xsi_ns),
             new XAttribute(XNamespace.Xmlns + "gpxx", __GPXX),
             new XAttribute(XNamespace.Xmlns + "gpxtpx", __GPX_tpx),
             new XAttribute("version", "1.1"));
+
         SaveTo(gpx);
 
-        new XDocument(new XDeclaration("1.0", "utf-8", null), gpx).Save(FileName);
+        var document = new XDocument(new XDeclaration("1.0", "utf-8", null), gpx);
+        document.Save(FileName);
     }
 
     public void SaveTo(XElement gpx)
     {
-        if (gpx.Name.LocalName != nameof(gpx)) throw new ArgumentException($@"Родительский узел не является узлом {nameof(gpx)}");
-        if (!string.IsNullOrWhiteSpace(Creator)) gpx.Add(new XAttribute(__Creator_xml_name, Creator));
+        if (gpx.Name.LocalName != nameof(gpx)) 
+            throw new ArgumentException($@"Родительский узел не является узлом {nameof(gpx)}");
+
+        if (Creator is { Length: >0 } creator) gpx.Add(new XAttribute(__Creator_xml_name, creator));
         if (Time != default) gpx.Add(new XElement(__GPX_ns + __Time_xml_name, Time));
+        
         if (MetaData.Bounds.IsEmpty)
         {
             GetBounds(_Tracks.SelectMany(trk => trk.Segments).SelectAll(), out var min_lat, out var max_lat, out var min_lon, out var max_lon);
@@ -93,11 +97,15 @@ public partial class GPXDocument : IEnumerable<GPXDocument.Track>
             bnd.MinLongitude = min_lon;
             bnd.MaxLongitude = max_lon;
         }
+
         MetaData.SaveTo(gpx);
+        
         foreach (var way_point in _WayPoints)
             way_point.SaveTo(gpx, "wpt");
+
         foreach (var track in _Tracks)
             track.SaveTo(gpx);
+
         if (Extensions.HasAttributes || Extensions.HasElements) gpx.Add(Extensions);
     }
 
@@ -123,25 +131,26 @@ public partial class GPXDocument : IEnumerable<GPXDocument.Track>
 
     public void LoadFrom(XElement gpx)
     {
-        if (gpx.Name.LocalName != nameof(gpx)) throw new ArgumentException($@"Родительский узел не является узлом {nameof(gpx)}");
-        Creator = (string)gpx.Attribute(__Creator_xml_name);
-        Time    = (DateTime?)gpx.Element(__GPX_ns + __Time_xml_name) ?? default(DateTime);
-        MetaData.LoadFrom(gpx);
-        foreach (var wpt in gpx.Elements(__GPX_ns + "wpt").Where(wpt => wpt.HasElements))
-        {
-            var way_point = new Point();
-            way_point.LoadFrom(wpt);
-            _WayPoints.Add(way_point);
-        }
+        if (gpx.Name.LocalName != nameof(gpx)) 
+            throw new ArgumentException($@"Родительский узел не является узлом {nameof(gpx)}");
 
-        foreach (var trk in gpx.Elements(__GPX_ns + "trk").Where(trk => trk.HasElements))
-        {
-            var track = new Track();
-            track.LoadFrom(trk);
-            _Tracks.Add(track);
-        }
-        var extensions                     = gpx.Element(__GPX_ns + "extensions");
-        if (extensions != null) Extensions = extensions;
+        Creator = (string)gpx.Attribute(__Creator_xml_name);
+        Time    = (DateTime?)gpx.Element(__GPX_ns + __Time_xml_name) ?? default;
+
+        MetaData.LoadFrom(gpx);
+
+        _WayPoints.AddRange(gpx
+           .Elements(__GPX_ns + "wpt")
+           .Where(wpt => wpt.HasElements)
+           .Select(wpt => new Point().LoadFrom(wpt)));
+
+        _Tracks.AddRange(gpx
+           .Elements(__GPX_ns + "trk")
+           .Where(trk => trk.HasElements)
+           .Select(trk => new Track().LoadFrom(trk)));
+
+        if (gpx.Element(__GPX_ns + "extensions") is { } extensions) 
+            Extensions = extensions;
     }
 
     IEnumerator<Track> IEnumerable<Track>.GetEnumerator() => _Tracks.GetEnumerator();

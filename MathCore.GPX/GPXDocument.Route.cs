@@ -5,6 +5,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Xml.Linq;
 
+using static System.Net.Mime.MediaTypeNames;
+
 namespace MathCore.GPX;
 
 public partial class GPXDocument
@@ -61,37 +63,39 @@ public partial class GPXDocument
             rte = gpx.Element(__GPX_ns + nameof(rte));
             if (rte is null) return;
 
-            if (!string.IsNullOrWhiteSpace(Name)) rte.Add(new XElement(__GPX_ns + "name", Name));
-            if (!string.IsNullOrWhiteSpace(Comment)) rte.Add(new XElement(__GPX_ns + "cmt", Comment));
-            if (!string.IsNullOrWhiteSpace(Description)) rte.Add(new XElement(__GPX_ns + "desc", Description));
-            if (!string.IsNullOrWhiteSpace(Source)) rte.Add(new XElement(__GPX_ns + "src", Source));
+            if (Name is { Length       : >0 } name) rte.Add(new XElement(__GPX_ns + "name", name));
+            if (Comment is { Length    : >0 } comment) rte.Add(new XElement(__GPX_ns + "cmt", comment));
+            if (Description is { Length: >0 } description) rte.Add(new XElement(__GPX_ns + "desc", description));
+            if (Source is { Length     : >0 } source) rte.Add(new XElement(__GPX_ns + "src", source));
             Link.LoadFrom(rte);
             if (Number >= 0) rte.Add(new XElement(__GPX_ns + "number", Number));
-            if (!string.IsNullOrWhiteSpace(Type)) rte.Add(new XElement(__GPX_ns + "type", Type));
+            if (Type is { Length: >0 } type) rte.Add(new XElement(__GPX_ns + "type", type));
             if (Extensions.HasAttributes || Extensions.HasElements) rte.Add(Extensions);
             foreach (var point in _Points) point.SaveTo(rte, "rtept");
             if (rte.HasElements) gpx.Add(rte);
         }
 
-        public void LoadFrom(XElement rte)
+        public Route LoadFrom(XElement rte)
         {
-            if (rte.Name.LocalName != nameof(rte)) throw new ArgumentException($@"Родительский узел не является узлом {nameof(rte)}");
+            if (rte.Name.LocalName != nameof(rte)) 
+                throw new ArgumentException($@"Родительский узел не является узлом {nameof(rte)}");
 
             Name        = (string)rte.Element(__GPX_ns + "name");
             Comment     = (string)rte.Element(__GPX_ns + "cmt");
             Description = (string)rte.Element(__GPX_ns + "desc");
             Source      = (string)rte.Element(__GPX_ns + "src");
             Link.LoadFrom(rte);
-            Number = (int?)rte.Element(__GPX_ns + "number") ?? -1;
-            Type   = (string)rte.Element(__GPX_ns + "type");
-            var extension                     = rte.Element(__GPX_ns + "extension");
-            if (extension != null) Extensions = extension;
-            foreach (var rtept in rte.Elements(__GPX_ns + "rtept").Where(rtept => rtept.HasElements))
-            {
-                var point = new Point();
-                point.LoadFrom(rtept);
-                _Points.Add(point);
-            }
+            Number      = (int?)rte.Element(__GPX_ns + "number") ?? -1;
+            Type        = (string)rte.Element(__GPX_ns + "type");
+
+            if (rte.Element(__GPX_ns + "extension") is { } extension) 
+                Extensions = extension;
+
+            _Points.AddRange(rte.Elements(__GPX_ns + "rtept")
+               .Where(rtept => rtept.HasElements)
+               .Select(rtept => new Point().LoadFrom(rtept)));
+
+            return this;
         }
 
         /// <inheritdoc />

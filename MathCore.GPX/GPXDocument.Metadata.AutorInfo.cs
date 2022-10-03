@@ -23,13 +23,16 @@ public partial class GPXDocument
                 if (author.HasElements) metadata.Add(author);
             }
 
-            public void LoadFrom(XElement metadata)
+            public AuthorInfo LoadFrom(XElement metadata)
             {
-                if (metadata.Name.LocalName != nameof(metadata)) throw new ArgumentException($@"Родительский узел не является узлом {nameof(metadata)}");
-                XElement? author;
-                author = metadata.Element(__GPX_ns + nameof(author));
-                if (author is null) return;
-                Name = (string)author.Element(__GPX_ns + Name_xml_name);
+                if (metadata.Name.LocalName != nameof(metadata)) 
+                    throw new ArgumentException($@"Родительский узел не является узлом {nameof(metadata)}");
+
+                if (metadata.Element(__GPX_ns + "author") is { } author 
+                    && (string)author.Element(__GPX_ns + Name_xml_name) is { Length: > 0 } name)
+                    Name = name;
+
+                return this;
             }
         }
     }
