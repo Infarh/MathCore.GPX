@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="MathCore.GPX.Infrastructure"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MathCore" Version="0.0.80.1" />
+  </ItemGroup>
+
+</Project>
