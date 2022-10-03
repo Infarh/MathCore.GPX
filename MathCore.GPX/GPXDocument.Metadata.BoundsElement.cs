@@ -3,7 +3,7 @@ using System.Xml.Linq;
 
 namespace MathCore.GPX;
 
-public partial class GPX
+public partial class GPXDocument
 {
     public partial class Metadata
     {
@@ -30,7 +30,7 @@ public partial class GPX
             public void LoadFrom(XElement metadata)
             {
                 if (metadata.Name.LocalName != nameof(metadata)) throw new ArgumentException($@"Родительский узел не является узлом {nameof(metadata)}");
-                XElement bounds = metadata.Element(__GPX_ns + nameof(bounds));
+                XElement? bounds = metadata.Element(__GPX_ns + nameof(bounds));
                 if (bounds is null) return;
                 MinLatitude  = (double?)bounds.Attribute("minlat") ?? double.NaN;
                 MaxLatitude  = (double?)bounds.Attribute("maxlat") ?? double.NaN;

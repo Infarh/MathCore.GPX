@@ -3,17 +3,17 @@ using System.Xml.Linq;
 
 namespace MathCore.GPX
 {
-    public partial class GPX
+    public partial class GPXDocument
     {
         /// <summary>Ссылка</summary>
         public class LinkElement
         {
             /// <summary>Адрес</summary>
-            public Uri href { get; set; }
+            public Uri href { get; set; } = null!;
             /// <summary>Текст</summary>
-            public string Text { get; set; }
+            public string Text { get; set; } = null!;
             /// <summary>Тип</summary>
-            public string Type { get; set; }
+            public string Type { get; set; } = null!;
 
             public void SaveTo(XElement element, string name)
             {
@@ -28,7 +28,7 @@ namespace MathCore.GPX
 
             public void LoadFrom(XElement element)
             {
-                XElement link;
+                XElement? link;
                 link = element.Element(__GPX_ns + nameof(link));
                 if (link is null) return;
                 var href_str = (string)link.Attribute(nameof(href));

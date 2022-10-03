@@ -7,7 +7,7 @@ using System.Xml.Linq;
 
 namespace MathCore.GPX
 {
-    public partial class GPX
+    public partial class GPXDocument
     {
         public partial class Track
         {

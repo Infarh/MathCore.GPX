@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
 
@@ -8,7 +8,7 @@ using System.Xml.Linq;
 
 namespace MathCore.GPX;
 
-public partial class GPX
+public partial class GPXDocument
 {
     /// <summary>Метаданные</summary>
     public partial class Metadata
@@ -50,7 +50,7 @@ public partial class GPX
         public void LoadFrom(XElement gpx)
         {
             if (gpx.Name.LocalName != nameof(gpx)) throw new ArgumentException($@"Родительский узел не является узлом {nameof(gpx)}");
-            XElement metadata;
+            XElement? metadata;
             metadata = gpx.Element(__GPX_ns + nameof(metadata));
             if (metadata is null) return;
             Link.LoadFrom(metadata);

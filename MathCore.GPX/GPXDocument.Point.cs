@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Xml.Linq;
 
 namespace MathCore.GPX;
 
-partial class GPX
+partial class GPXDocument
 {
     /// <summary>Точка маршрута</summary>
     public class Point
@@ -33,23 +33,24 @@ partial class GPX
         /// <summary>Высота над геоидом</summary>
         public double GeoidHeight { get; set; } = double.NaN;
         private const string GeoidHeight_xml_name = "geoidheight";
+
         /// <summary>Имя</summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
         private const string Name_xml_name = "name";
         /// <summary>Комментарий</summary>
-        public string Comment { get; set; }
+        public string Comment { get; set; } = null!;
         private const string Comment_xml_name = "cmt";
         /// <summary>Описание</summary>
-        public string Description { get; set; }
+        public string Description { get; set; } = null!;
         private const string Description_xml_name = "desc";
         /// <summary>Источник данных</summary>
-        public string Source { get; set; }
+        public string Source { get; set; } = null!;
         private const string Source_xml_name = "src";
         /// <summary>Имя символа на карте</summary>
-        public string SymbolName { get; set; }
+        public string SymbolName { get; set; } = null!;
         private const string SymbolName_xml_name = "sym";
         /// <summary>Тип (классификация)</summary>
-        public string Type { get; set; }
+        public string Type { get; set; } = null!;
         private const string Type_xml_name = "type";
         /// <summary>Количество спутников</summary>
         public int SatelliteCount { get; set; } = -1;

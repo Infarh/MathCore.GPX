@@ -11,20 +11,20 @@ using System.Xml.Linq;
 
 namespace MathCore.GPX;
 
-public partial class GPX : IEnumerable<GPX.Track>
+public partial class GPXDocument : IEnumerable<GPXDocument.Track>
 {
     private static readonly XNamespace __GPX_ns = XNamespace.Get("http://www.topografix.com/GPX/1/1");
     private static readonly XNamespace __GPXX = XNamespace.Get("http://www.garmin.com/xmlschemas/GpxExtensions/v3");
     private static readonly XNamespace __GPX_tpx = XNamespace.Get("http://www.garmin.com/xmlschemas/TrackPointExtension/v1");
 
-    public static GPX Open(string file)
+    public static GPXDocument Open(string file)
     {
-        var gpx = new GPX();
+        var gpx = new GPXDocument();
         gpx.Load(file);
         return gpx;
     }
 
-    public string Creator { get; set; }
+    public string Creator { get; set; } = null!;
     private const string __Creator_xml_name = "creator";
     public DateTime Time { get; set; }
     private const string __Time_xml_name = "time";
@@ -42,7 +42,7 @@ public partial class GPX : IEnumerable<GPX.Track>
 
     public XElement Extensions { get; private set; } = new(__GPX_ns + "extensions");
 
-    public GPX()
+    public GPXDocument()
     {
         WayPoints = _WayPoints.AsReadOnly();
         Routes    = _Routes.AsReadOnly();
@@ -119,7 +119,7 @@ public partial class GPX : IEnumerable<GPX.Track>
             min_longitude = min_latitude = max_longitude = max_latitude = double.NaN;
     }
 
-    public void Load(string FileName) => LoadFrom(XDocument.Load(FileName).Root ?? throw new InvalidOperationException());
+    public void Load(string FileName) => LoadFrom(XDocument.Load(FileName).Root ?? throw new InvalidOperationException("В загруженном XML-документе не найден корневой элемент"));
 
     public void LoadFrom(XElement gpx)
     {

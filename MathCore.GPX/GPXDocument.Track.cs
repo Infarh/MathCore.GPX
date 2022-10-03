@@ -11,28 +11,28 @@ using System.Xml.Linq;
 
 namespace MathCore.GPX
 {
-    public partial class GPX
+    public partial class GPXDocument
     {
         /// <summary>Трек</summary>
         public partial class Track : IEnumerable<Track.TrackSegment>
         {
             /// <summary>Имя</summary>
-            public string Name { get; set; }
+            public string Name { get; set; } = null!;
             private const string Name_xml_name = "name";
             /// <summary>Коментарий</summary>
-            public string Comment { get; set; }
+            public string Comment { get; set; } = null!;
             private const string Comment_xml_name = "cmt";
             /// <summary>Описание</summary>
-            public string Description { get; set; }
+            public string Description { get; set; } = null!;
             private const string Description_xml_name = "desc";
             /// <summary>Источник данных</summary>
-            public string Source { get; set; }
+            public string Source { get; set; } = null!;
             private const string Source_xml_name = "src";
             /// <summary>Номер</summary>
             public int Number { get; set; } = -1;
             private readonly string Number_xml_name = "number";
             /// <summary>Тип (классификатор)</summary>
-            public string Type { get; set; }
+            public string Type { get; set; } = null!;
             private const string Type_xml_name = "type";
 
             /// <summary>Дополнительная информация о треке</summary>

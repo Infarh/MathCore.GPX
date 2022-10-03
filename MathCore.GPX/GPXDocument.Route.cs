@@ -7,25 +7,25 @@ using System.Xml.Linq;
 
 namespace MathCore.GPX;
 
-public partial class GPX
+public partial class GPXDocument
 {
     /// <summary>Машрут</summary>
     public partial class Route : IEnumerable<Point>
     {
         /// <summary>Имя</summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
         /// <summary>Коментарий</summary>
-        public string Comment { get; set; }
+        public string Comment { get; set; } = null!;
         /// <summary>Описание</summary>
-        public string Description { get; set; }
+        public string Description { get; set; } = null!;
         /// <summary>Источник данных</summary>
-        public string Source { get; set; }
+        public string Source { get; set; } = null!;
         /// <summary> Ссылка</summary>
         public LinkElement Link { get; set; } = new();
         /// <summary>Номер</summary>
         public int Number { get; set; } = -1;
         /// <summary>Тип (классификатор)</summary>
-        public string Type { get; set; }
+        public string Type { get; set; } = null!;
         /// <summary>Дополнительная информация</summary>
         public XElement Extensions { get; private set; } = new(__GPX_ns + "extensions");
         /// <summary>Массив точек маршрута</summary>
@@ -57,7 +57,7 @@ public partial class GPX
         public void SaveTo(XElement gpx)
         {
             if (gpx.Name.LocalName != nameof(gpx)) throw new ArgumentException($@"Родительский узел не является узлом {nameof(gpx)}");
-            XElement rte;
+            XElement? rte;
             rte = gpx.Element(__GPX_ns + nameof(rte));
             if (rte is null) return;
 

@@ -10,8 +10,4 @@
     <Using Include="MathCore.GPX.Infrastructure"/>
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="MathCore" Version="0.0.80.1" />
-  </ItemGroup>
-
 </Project>
